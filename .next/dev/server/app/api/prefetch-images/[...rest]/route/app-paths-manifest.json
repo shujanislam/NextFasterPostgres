@@ -1,3 +1,0 @@
-{
-  "/api/prefetch-images/[...rest]/route": "app/api/prefetch-images/[...rest]/route.js"
-}

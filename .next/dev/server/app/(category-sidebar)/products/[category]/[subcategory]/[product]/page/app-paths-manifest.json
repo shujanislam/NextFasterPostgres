@@ -1,3 +1,0 @@
-{
-  "/(category-sidebar)/products/[category]/[subcategory]/[product]/page": "app/(category-sidebar)/products/[category]/[subcategory]/[product]/page.js"
-}

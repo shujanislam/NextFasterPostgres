@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///home/ayan/Programming/NextFasterPostgres/src/app/error.tsx"],"sourcesContent":["\"use client\";\n\nexport default function Page() {\n  return <div>Error</div>;\n}\n"],"names":["c","_c","Page","$","$i","Symbol","for","t0"],"mappings":";;;;;AAAa,SAAAA,CAAA,IAAAC,EAAA;AAAb,YAAY;;;AAEG;IAAA,MAAAE,CAAA,OAAAF,gLAAA,EAAA;IAAA,IAAAE,CAAA,CAAA,EAAA,KAAA,oEAAA;QAAA,IAAA,IAAAC,EAAA,GAAA,GAAAA,EAAA,GAAA,GAAAA,EAAA,IAAA,EAAA;YAAAD,CAAA,CAAAC,EAAA,CAAA,GAAAC,MAAA,CAAAC,GAAA,CAAA;QAAA;QAAAH,CAAA,CAAA,EAAA,GAAA;IAAA;IAAA,IAAAI,EAAA;IAAA,IAAAJ,CAAA,CAAA,EAAA,KAAAE,MAAA,CAAAC,GAAA,CAAA,8BAAA;QACNC,EAAA,iBAAA,6LAAA,GAAgB;sBAAX,KAAK,EAAV,GAAgB;;;;;;QAAAJ,CAAA,CAAA,EAAA,GAAAI,EAAA;IAAA,OAAA;QAAAA,EAAA,GAAAJ,CAAA,CAAA,EAAA;IAAA;IAAA,OAAhBI,EAAgB;AAAA;KADVL,KAAA","ignoreList":[]}}]
-}
