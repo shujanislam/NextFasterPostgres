@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///home/ayan/Programming/NextFasterPostgres/src/app/error.tsx"],"sourcesContent":["\"use client\";\n\nexport default function Page() {\n  return <div>Error</div>;\n}\n"],"names":[],"mappings":";;;;;AAAA;;AAEe,SAAS;IACtB,qBAAO,8OAAC;kBAAI;;;;;;AACd"}}]
+}
