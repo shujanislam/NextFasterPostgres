@@ -11,7 +11,7 @@ export default async function Home(props: {
   const collectionData = await getCollectionDetails(collectionSlug);
   const collection = collectionData[0]; // get the first (and only) element
 
-  console.log(collection)
+  // console.log(collection)
 
   if (!collection) {
     return <div>No collection found.</div>;

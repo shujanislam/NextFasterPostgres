@@ -75,7 +75,7 @@ export function ProductLink(props: {
         <div className="text-sm font-medium text-gray-700 group-hover:underline">
           {product.name}
         </div>
-        <p className="overflow-hidden text-xs">{product.description}</p>
+        <p className="overflow-hidden text-xs">{product.price}</p>
       </div>
     </Link>
   );

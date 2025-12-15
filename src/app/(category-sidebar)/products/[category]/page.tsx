@@ -32,8 +32,6 @@ export default async function Page(props: { params: { category: string } }) {
 
   if (rows.length === 0) return notFound();
 
-  console.log(rows);
-
   // Group subcollections + subcategories
   const subcollectionsMap: Record<string, any> = {};
   rows.forEach((row) => {

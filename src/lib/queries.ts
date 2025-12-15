@@ -21,6 +21,8 @@ export async function getUser() {
     return null;
   }
 
+  const start: int = performance.now();
+
   const { rows } = await pool.query(
     `
     SELECT id, username 
@@ -30,6 +32,12 @@ export async function getUser() {
     [sessionData.user.id],
   );
 
+  const end: int = performance.now();
+
+  console.log(
+    `getUser: start: ${start}, end: ${end}, query time: ${end - start}ms`,
+  );
+
   return rows[0] ?? null;
 }
 
@@ -37,18 +45,28 @@ export async function getUser() {
 
 export const getProductsForSubcategory = unstable_cache(
   async (subcategorySlug: string) => {
+    const start: int = performance.now();
+
     const { rows } = await pool.query(
       `
-      SELECT *
+      SELECT slug, name, price, image_url
       FROM products
       WHERE subcategory_slug = $1
       ORDER BY slug ASC
+      LIMIT 50
       `,
       [subcategorySlug],
     );
+
+    const end: int = performance.now();
+
+    console.log(`getProducts query time: ${end - start}ms`);
+
+    console.log("just an update");
+
     return rows;
   },
-  ["subcategory-products"],
+  (subcategorySlug: string) => ["subcategory-products", subcategorySlug],
   { revalidate: 60 * 60 * 2 },
 );
 
@@ -63,7 +81,6 @@ export const getProductDetails = unstable_cache(
       `,
       [productSlug],
     );
-    console.log("product details " + rows[0]);
     return rows[0] ?? null;
   },
   ["product"],
@@ -90,7 +107,7 @@ export const getCollections = unstable_cache(
       ORDER BY c.name ASC
       `,
     );
-    console.log("collections " + rows);
+    console.log(rows);
     return rows;
   },
   ["collections"],
@@ -117,7 +134,6 @@ export const getCollectionDetails = unstable_cache(
       [collectionSlug],
     );
 
-    console.log("collecion details " + rows);
     return rows;
   },
   ["collection"],
@@ -194,9 +210,20 @@ export const getSubcategory = unstable_cache(
 
 export const getProductCount = unstable_cache(
   async () => {
+    const start: int = performance.now();
+
     const { rows } = await pool.query(
       `SELECT COUNT(*)::int AS count FROM products`,
     );
+
+    const end: int = performance.now();
+
+    console.log(
+      `getProductCount : start: ${start}, end: ${end}, query time: ${end - start}ms`,
+    );
+
+    console.log(rows);
+
     return rows[0].count;
   },
   ["total-product-count"],
@@ -205,6 +232,8 @@ export const getProductCount = unstable_cache(
 
 export const getCategoryProductCount = unstable_cache(
   async (categorySlug: string) => {
+    const start: int = performance.now();
+
     const { rows } = await pool.query(
       `
       SELECT COUNT(p.*)::int AS count
@@ -219,6 +248,15 @@ export const getCategoryProductCount = unstable_cache(
       `,
       [categorySlug],
     );
+
+    // console.log(`getCategoryProductCount: ${rows}`);
+
+    const end: int = performance.now();
+
+    console.log(
+      `getCategoryProductCount : start: ${start}, end: ${end}, query time: ${end - start}ms`,
+    );
+
     return rows[0].count;
   },
   ["category-product-count"],
@@ -227,6 +265,7 @@ export const getCategoryProductCount = unstable_cache(
 
 export const getSubcategoryProductCount = unstable_cache(
   async (subcategorySlug: string) => {
+    const start: int = performance.now();
     const { rows } = await pool.query(
       `
       SELECT COUNT(*)::int AS count
@@ -235,6 +274,15 @@ export const getSubcategoryProductCount = unstable_cache(
       `,
       [subcategorySlug],
     );
+
+    // console.log(rows);
+
+    const end: int = performance.now();
+
+    console.log(
+      `getSubcategoryProductCount : start: ${start}, end: ${end}, query time: ${end - start}ms`,
+    );
+
     return rows[0].count;
   },
   ["subcategory-product-count"],

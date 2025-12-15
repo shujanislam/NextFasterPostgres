@@ -31,6 +31,8 @@ export async function getCart(): Promise<CartItem[]> {
   const cart = cookieStore.get("cart");
 
   if (!cart) return [];
+  
+  if(!cart && !cookie) return [];
 
   try {
     return cartSchema.parse(JSON.parse(cart.value));
@@ -47,6 +49,8 @@ export async function detailedCart() {
   if (cart.length === 0) return [];
 
   const slugs = cart.map((item) => item.productSlug);
+
+  const start: int = performance.now();
 
   const { rows: products } = await pool.query(
     `
@@ -65,6 +69,10 @@ export async function detailedCart() {
     `,
     [slugs],
   );
+
+  const end: int = performance.now();
+
+  console.log(`detailedCart: start ${start}, end ${end}, time: ${end-start}ms`);
 
   const quantityMap = new Map(
     cart.map((item) => [item.productSlug, item.quantity]),

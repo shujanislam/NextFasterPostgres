@@ -6,23 +6,6 @@ import {
   getSubcategory,
   getSubcategoryProductCount,
 } from "@/lib/queries";
-// import { db } from "@/db";
-
-// export async function generateStaticParams() {
-//   const results = await db.query.subcategories.findMany({
-//     with: {
-//       subcollection: {
-//         with: {
-//           category: true,
-//         },
-//       },
-//     },
-//   });
-//   return results.map((s) => ({
-//     category: s.subcollection.category.slug,
-//     subcategory: s.slug,
-//   }));
-// }
 
 export async function generateMetadata(props: {
   params: Promise<{ category: string; subcategory: string }>;
@@ -66,7 +49,7 @@ export default async function Page(props: {
     return notFound();
   }
 
-  const finalCount = countRes[0]?.count;
+  const finalCount = countRes;
   return (
     <div className="container mx-auto p-4">
       {finalCount > 0 ? (

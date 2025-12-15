@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { cookies, headers } from "next/headers";
 import { validatedAction } from "@/lib/middleware";
 import pool from "../../db/index.ts";
-// import { NewUser, users } from "@/db/schema";
 import { comparePasswords, hashPassword, setSession } from "@/lib/session";
 import { authRateLimit, signUpRateLimit } from "@/lib/rate-limit";
 
@@ -40,11 +39,18 @@ export const signUp = validatedAction(authSchema, async (data) => {
     passwordHash,
   };
 
+  const start: int = performance.now();
+
   const createdUser = await pool.query('INSERT INTO users(username, password_hash) VALUES($1, $2) RETURNING *', [username, passwordHash]);
 
   if (!createdUser) {
     return { error: "Failed to create user. Please try again." };
   }
+  
+  const end: int = performance.now();
+
+  console.log(`SignUp: query time ${end-start}ms`);
+
   await setSession(createdUser.rows[0]);
 });
 
@@ -67,8 +73,6 @@ export const signIn = validatedAction(authSchema, async (data) => {
   if (user.rows.length === 0) {
     return { error: "Invalid username or password. Please try again." };
   }
-
-  console.log(user.rows[0]);
 
   const foundUser = user.rows[0];
 

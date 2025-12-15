@@ -10,6 +10,8 @@ export default async function Home() {
   ]);
   let imageCount = 0;
 
+  console.log(productCount);
+
   return (
     <div className="w-full p-4">
       <div className="mb-2 w-full flex-grow border-b-[1px] border-accent1 text-sm font-semibold text-black">
