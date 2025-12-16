@@ -70,6 +70,55 @@ export const getProductsForSubcategory = unstable_cache(
   { revalidate: 60 * 60 * 2 },
 );
 
+export const getRelatedProducts = unstable_cache(
+  async (subcategorySlug: string, currentSlug: string) => {
+    const start: int = performance.now();
+    // 1) get count (fast, index-backed)
+    const countRes = await pool.query(
+      `
+      SELECT COUNT(*)::int AS count
+      FROM products
+      WHERE subcategory_slug = $1
+        AND slug <> $2
+      `,
+      [subcategorySlug, currentSlug],
+    );
+
+    const count = countRes.rows[0].count;
+    if (count === 0) return [];
+
+    // 2) random offset (cheap)
+    const offset = Math.floor(Math.random() * Math.max(count - 10, 1));
+
+    // 3) fetch slice
+    const { rows } = await pool.query(
+      `
+      SELECT slug, name, price, image_url
+      FROM products
+      WHERE subcategory_slug = $1
+        AND slug <> $2
+      ORDER BY slug
+      OFFSET $3
+      LIMIT 10
+      `,
+      [subcategorySlug, currentSlug, offset],
+    );
+
+    const end: int = performance.now();
+
+    console.log(`related products query time: ${end - start}ms`);
+
+    return rows;
+  },
+  // 🔑 cache key MUST include currentSlug
+  (subcategorySlug: string, currentSlug: string) => [
+    "related-products",
+    subcategorySlug,
+    currentSlug,
+  ],
+  { revalidate: 60 * 60 * 2 },
+);
+
 export const getProductDetails = unstable_cache(
   async (productSlug: string) => {
     const { rows } = await pool.query(

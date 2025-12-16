@@ -25,7 +25,6 @@ export default async function Home(props: {
       <div className="flex flex-row flex-wrap justify-center gap-2 border-b-2 py-4 sm:justify-start">
         {collection.categories.map((category: any) => (
           <Link
-            prefetch={true}
             key={category.slug}
             className="flex w-[125px] flex-col items-center text-center"
             href={`/products/${category.slug}`}

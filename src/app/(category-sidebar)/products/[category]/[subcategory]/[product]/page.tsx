@@ -4,29 +4,7 @@ import { notFound } from "next/navigation";
 import { AddToCartForm } from "@/components/add-to-cart-form";
 import { Metadata } from "next";
 
-import { getProductDetails, getProductsForSubcategory } from "@/lib/queries";
-// import { db } from "@/db";
-
-// export async function generateStaticParams() {
-//   const results = await db.query.products.findMany({
-//     with: {
-//       subcategory: {
-//         with: {
-//           subcollection: {
-//             with: {
-//               category: true,
-//             },
-//           },
-//         },
-//       },
-//     },
-//   });
-//   return results.map((s) => ({
-//     category: s.subcategory.subcollection.category.slug,
-//     subcategory: s.subcategory.slug,
-//     product: s.slug,
-//   }));
-// }
+import { getProductDetails, getProductsForSubcategory, getRelatedProducts } from "@/lib/queries";
 
 export async function generateMetadata(props: {
   params: Promise<{ product: string; category: string; subcategory: string }>;
@@ -57,19 +35,22 @@ export default async function Page(props: {
   const urlDecodedSubcategory = decodeURIComponent(subcategory);
   const [productData, relatedUnshifted] = await Promise.all([
     getProductDetails(urlDecodedProduct),
-    getProductsForSubcategory(urlDecodedSubcategory),
+    // getProductsForSubcategory(urlDecodedSubcategory),
+    getRelatedProducts(urlDecodedSubcategory, urlDecodedProduct),
   ]);
 
   if (!productData) {
     return notFound();
   }
-  const currentProductIndex = relatedUnshifted.findIndex(
-    (p) => p.slug === productData.slug,
-  );
-  const related = [
-    ...relatedUnshifted.slice(currentProductIndex + 1),
-    ...relatedUnshifted.slice(0, currentProductIndex),
-  ];
+  // const currentProductIndex = relatedUnshifted.findIndex(
+  //   (p) => p.slug === productData.slug,
+  // );
+  // const related = [
+  //   ...relatedUnshifted.slice(currentProductIndex + 1),
+  //   ...relatedUnshifted.slice(0, currentProductIndex),
+  // ];
+
+  const related = relatedUnshifted;
 
   return (
     <div className="container p-4">
@@ -84,7 +65,7 @@ export default async function Page(props: {
             src={productData.image_url ?? "/placeholder.svg?height=64&width=64"}
             alt={`A small picture of ${productData.name}`}
             height={256}
-            quality={80}
+            quality={75}
             width={256}
             className="h-56 w-56 flex-shrink-0 border-2 md:h-64 md:w-64"
           />
@@ -104,7 +85,7 @@ export default async function Page(props: {
         <div className="flex flex-row flex-wrap gap-2">
           {related?.map((product) => (
             <ProductLink
-              key={product.name}
+              key={product.slug}
               loading="lazy"
               category_slug={category}
               subcategory_slug={subcategory}

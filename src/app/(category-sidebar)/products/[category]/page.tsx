@@ -74,7 +74,6 @@ export default async function Page(props: { params: { category: string } }) {
                 {subcollection.subcategories.length > 0 ? (
                   subcollection.subcategories.map((subcategory) => (
                     <Link
-                      prefetch
                       key={subcategory.slug}
                       className="group flex h-full w-full flex-row gap-2 border px-4 py-2 hover:bg-gray-100 sm:w-[200px]"
                       href={`/products/${category}/${subcategory.slug}`}
