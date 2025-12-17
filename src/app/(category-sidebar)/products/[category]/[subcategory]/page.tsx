@@ -34,28 +34,29 @@ export async function generateMetadata(props: {
 
 export default async function Page(props: {
   params: Promise<{ subcategory: string; category: string }>;
-  searchParams?: Promise<{ page?: string }>;
+  searchParams?: Promise<{ after?: string }>;
 }) {
   const { subcategory, category } = await props.params;
 
   const sp = props.searchParams ? await props.searchParams : {};
-  const page = Math.max(1, Number(sp.page ?? "1") || 1);
+  const after = sp.after ? decodeURIComponent(sp.after) : null;
 
   const urlDecodedSubcategory = decodeURIComponent(subcategory);
 
-  const limit = 20;
-  const offset = (page - 1) * limit;
-
   const [products, countRows] = await Promise.all([
-    getProductsForSubcategory(urlDecodedSubcategory, offset),
+    getProductsForSubcategory(urlDecodedSubcategory, after),
     getSubcategoryProductCount(urlDecodedSubcategory),
   ]);
 
   if (!products) notFound();
 
-  const totalCount = countRows;
-  const shownSoFar = Math.min(offset + products.length, totalCount);
-  const hasMore = shownSoFar < totalCount;
+  const totalCount = countRows[0]?.count ?? 0;
+
+  // next cursor = last slug in the current batch
+  const nextAfter = products.length ? products[products.length - 1].slug : null;
+
+  // if we got fewer than 20 items, there's probably no more
+  const hasMore = products.length === 20 && nextAfter !== null;
 
   return (
     <div className="container mx-auto p-4">
@@ -70,7 +71,7 @@ export default async function Page(props: {
       <div className="flex flex-row flex-wrap gap-2">
         {products.map((product) => (
           <ProductLink
-            key={product.slug} // better than name
+            key={product.slug}
             loading="eager"
             category_slug={category}
             subcategory_slug={subcategory}
@@ -84,7 +85,7 @@ export default async function Page(props: {
         {hasMore ? (
           <Link
             className="inline-block rounded border px-3 py-2 text-sm"
-            href={`?page=${page + 1}`}
+            href={`?after=${encodeURIComponent(nextAfter!)}`}
           >
             Load more...
           </Link>

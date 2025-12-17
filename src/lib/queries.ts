@@ -44,62 +44,64 @@ export async function getUser() {
 /* ----------------------------- PRODUCTS ----------------------------- */
 
 export const getProductsForSubcategory = unstable_cache(
-  async (subcategorySlug: string, count: number) => {
+  async (subcategorySlug: string, afterSlug: string | null) => {
     const { rows } = await pool.query(
-      `
-      SELECT slug, name, price, image_url
-      FROM products
-      WHERE subcategory_slug = $1
-      ORDER BY slug ASC
-      LIMIT 20
-      OFFSET $2
-      `,
-      [subcategorySlug, count],
+      afterSlug
+        ? `
+          SELECT slug, name, price, image_url
+          FROM products
+          WHERE subcategory_slug = $1
+            AND slug > $2
+          ORDER BY slug ASC
+          LIMIT 20
+          `
+        : `
+          SELECT slug, name, price, image_url
+          FROM products
+          WHERE subcategory_slug = $1
+          ORDER BY slug ASC
+          LIMIT 20
+          `,
+      afterSlug ? [subcategorySlug, afterSlug] : [subcategorySlug],
     );
 
     return rows;
   },
-  (subcategorySlug: string, count: number) => ["subcategory-products", subcategorySlug, String(count)],
+  (subcategorySlug: string, afterSlug: string | null) => [
+    "subcategory-products",
+    subcategorySlug,
+    afterSlug ?? "FIRST",
+  ],
   { revalidate: 60 * 60 * 2 },
 );
 
 export const getRelatedProducts = unstable_cache(
   async (subcategorySlug: string, currentSlug: string) => {
-    // 1) get count (fast, index-backed)
-    const countRes = await pool.query(
-      `
-      SELECT COUNT(*)::int AS count
-      FROM products
-      WHERE subcategory_slug = $1
-        AND slug <> $2
-      `,
-      [subcategorySlug, currentSlug],
-    );
-
-    const count = countRes.rows[0].count;
-    if (count === 0) return [];
-
-    // 2) random offset (cheap)
-    const offset = Math.floor(Math.random() * Math.max(count - 10, 1));
-
-    // 3) fetch slice
     const { rows } = await pool.query(
       `
+      WITH c AS (
+        SELECT COUNT(*)::int AS count
+        FROM products
+        WHERE subcategory_slug = $1
+          AND slug <> $2
+      ),
+      o AS (
+        SELECT (floor(random() * GREATEST((SELECT count FROM c) - 10, 1)))::int AS offset
+      )
       SELECT slug, name, price, image_url
       FROM products
       WHERE subcategory_slug = $1
         AND slug <> $2
       ORDER BY slug
-      OFFSET $3
+      OFFSET (SELECT offset FROM o)
       LIMIT 10
       `,
-      [subcategorySlug, currentSlug, offset],
+      [subcategorySlug, currentSlug],
     );
 
     return rows;
   },
-  // 🔑 cache key MUST include currentSlug
-  (subcategorySlug: string, currentSlug: string) => [
+  (subcategorySlug, currentSlug) => [
     "related-products",
     subcategorySlug,
     currentSlug,

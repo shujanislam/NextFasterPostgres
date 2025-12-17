@@ -6,17 +6,15 @@ import { Suspense } from "react";
 import { Cart } from "@/components/cart";
 import { AuthServer } from "./auth.server";
 import { Link } from "@/components/ui/link";
-import { Analytics } from "@vercel/analytics/react";
 import { Toaster } from "sonner";
-import { WelcomeToast } from "./welcome-toast";
+// import { WelcomeToast } from "./welcome-toast";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: {
     template: "%s | NextFaster",
-    default: "NextFaster",
+    default: "NextFasterPostgres",
   },
   description: "A performant site built with Next.js",
 };
@@ -56,7 +54,7 @@ export default async function RootLayout({
                   href="/"
                   className="text-4xl font-bold text-accent1"
                 >
-                  NextFaster
+                  NextFasterPostgres
                 </Link>
                 <div className="items flex w-full flex-row items-center justify-between gap-4">
                   <div className="mx-0 flex-grow sm:mx-auto sm:flex-grow-0">
@@ -121,12 +119,10 @@ export default async function RootLayout({
           </div>
         </footer>
         {/* does putting this in suspense do anything? */}
-        <Suspense fallback={null}>
-          <Toaster closeButton />
-          <WelcomeToast />
-        </Suspense>
-        <Analytics scriptSrc="/insights/events.js" endpoint="/hfi/events" />
-        <SpeedInsights />
+        {/* <Suspense fallback={null}> */}
+        {/*   <Toaster closeButton /> */}
+        {/*   <WelcomeToast /> */}
+        {/* </Suspense> */}
       </body>
     </html>
   );
