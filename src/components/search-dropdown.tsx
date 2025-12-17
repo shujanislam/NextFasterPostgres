@@ -41,6 +41,7 @@ export function SearchDropdownComponent() {
         const json = await results.json();
         setIsLoading(false);
         setFilteredItems(json as ProductSearchResult);
+        console.log(filteredItems);
       });
     }
   }, [searchTerm, inputRef]);
@@ -66,7 +67,7 @@ export function SearchDropdownComponent() {
       );
     } else if (e.key === "Enter" && highlightedIndex >= 0) {
       router.push(filteredItems[highlightedIndex].href);
-      setSearchTerm(filteredItems[highlightedIndex].name);
+      setSearchTerm(filteredItems[highlightedIndex]?.name ?? "");
       setIsOpen(false);
       inputRef.current?.blur();
     }
@@ -100,7 +101,7 @@ export function SearchDropdownComponent() {
             autoCorrect="off"
             type="text"
             placeholder="Search..."
-            value={searchTerm}
+            value={searchTerm ?? ""}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setIsOpen(e.target.value.length > 0);
@@ -127,14 +128,14 @@ export function SearchDropdownComponent() {
             <ScrollArea className="h-[300px]">
               {filteredItems.length > 0 ? (
                 filteredItems.map((item, index) => (
-                  <Link href={item.href} key={item.slug} prefetch={true}>
+                  <Link href={item.href} key={item.href} prefetch={false}>
                     <div
                       className={cn("flex cursor-pointer items-center p-2", {
                         "bg-gray-100": index === highlightedIndex,
                       })}
                       onMouseEnter={() => setHighlightedIndex(index)}
                       onClick={() => {
-                        setSearchTerm(item.name);
+                        setSearchTerm(item.name ?? "");
                         setIsOpen(false);
                         inputRef.current?.blur();
                       }}
@@ -149,7 +150,7 @@ export function SearchDropdownComponent() {
                         width={40}
                         quality={65}
                       />
-                      <span className="text-sm">{item.name}</span>
+                      <span className="text-sm text-black">{item.name}</span>
                     </div>
                   </Link>
                 ))
