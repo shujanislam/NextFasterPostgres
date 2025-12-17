@@ -44,35 +44,27 @@ export async function getUser() {
 /* ----------------------------- PRODUCTS ----------------------------- */
 
 export const getProductsForSubcategory = unstable_cache(
-  async (subcategorySlug: string) => {
-    const start: int = performance.now();
-
+  async (subcategorySlug: string, count: number) => {
     const { rows } = await pool.query(
       `
       SELECT slug, name, price, image_url
       FROM products
       WHERE subcategory_slug = $1
       ORDER BY slug ASC
-      LIMIT 50
+      LIMIT 20
+      OFFSET $2
       `,
-      [subcategorySlug],
+      [subcategorySlug, count],
     );
-
-    const end: int = performance.now();
-
-    console.log(`getProducts query time: ${end - start}ms`);
-
-    console.log("just an update");
 
     return rows;
   },
-  (subcategorySlug: string) => ["subcategory-products", subcategorySlug],
+  (subcategorySlug: string, count: number) => ["subcategory-products", subcategorySlug, String(count)],
   { revalidate: 60 * 60 * 2 },
 );
 
 export const getRelatedProducts = unstable_cache(
   async (subcategorySlug: string, currentSlug: string) => {
-    const start: int = performance.now();
     // 1) get count (fast, index-backed)
     const countRes = await pool.query(
       `
@@ -103,10 +95,6 @@ export const getRelatedProducts = unstable_cache(
       `,
       [subcategorySlug, currentSlug, offset],
     );
-
-    const end: int = performance.now();
-
-    console.log(`related products query time: ${end - start}ms`);
 
     return rows;
   },
