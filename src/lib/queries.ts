@@ -21,8 +21,6 @@ export async function getUser() {
     return null;
   }
 
-  const start: int = performance.now();
-
   const { rows } = await pool.query(
     `
     SELECT id, username 
@@ -30,12 +28,6 @@ export async function getUser() {
     WHERE id = $1
     `,
     [sessionData.user.id],
-  );
-
-  const end: int = performance.now();
-
-  console.log(
-    `getUser: start: ${start}, end: ${end}, query time: ${end - start}ms`,
   );
 
   return rows[0] ?? null;
