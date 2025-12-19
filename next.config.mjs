@@ -17,17 +17,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "bevgyjm5apuichhj.public.blob.vercel-storage.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "store.storeimages.cdn-apple.com",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "www.tradeinn.com",
+        hostname: "*",
         pathname: "/**",
       },
     ],
