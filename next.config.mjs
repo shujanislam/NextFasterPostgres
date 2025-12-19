@@ -25,6 +25,11 @@ const nextConfig = {
         hostname: "store.storeimages.cdn-apple.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "www.tradeinn.com",
+        pathname: "/**",
+      },
     ],
   },
 

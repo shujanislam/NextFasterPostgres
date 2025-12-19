@@ -128,6 +128,26 @@ export const getProductDetails = unstable_cache(
   { revalidate: 60 * 60 * 2 },
 );
 
+export const uploadProduct = async (
+  subcategory_slug: string,
+  name: string,
+  price: number,
+  description: string,
+  image_url: string,
+) => {
+  const product_slug = name.trim().toLowerCase().replace(/\s+/g, "-");
+  try {
+    const { rows } = await pool.query(
+      `INSERT INTO products(slug, subcategory_slug, name, price, description, image_url) VALUES($1, $2, $3, $4, $5, $6)`,
+      [product_slug, subcategory_slug, name, price, description, image_url],
+    );
+    console.log(rows);
+    return rows ?? null;
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
 /* ----------------------------- COLLECTIONS ----------------------------- */
 
 export const getCollections = unstable_cache(
@@ -148,7 +168,6 @@ export const getCollections = unstable_cache(
       ORDER BY c.name ASC
       `,
     );
-    console.log(rows);
     return rows;
   },
   ["collections"],
@@ -181,6 +200,16 @@ export const getCollectionDetails = unstable_cache(
   { revalidate: 60 * 60 * 2 },
 );
 /* ----------------------------- CATEGORIES ----------------------------- */
+
+export const getCategories = unstable_cache(
+  async () => {
+    const { rows } = await pool.query(`SELECT name from categories`);
+
+    return rows ?? null;
+  },
+  ["category"],
+  { revalidate: 60 * 60 * 2 },
+);
 
 export const getCategory = unstable_cache(
   async (categorySlug: string) => {
@@ -227,6 +256,20 @@ export const getCategory = unstable_cache(
     return rows[0] ?? null;
   },
   ["category"],
+  { revalidate: 60 * 60 * 2 },
+);
+
+export const getSubcategories = unstable_cache(
+  async () => {
+    const { rows } = await pool.query(
+      `
+      SELECT name, slug 
+      FROM subcategories
+      `,
+    );
+    return rows ?? null;
+  },
+  ["subcategory"],
   { revalidate: 60 * 60 * 2 },
 );
 
