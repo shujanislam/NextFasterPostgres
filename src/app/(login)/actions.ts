@@ -39,17 +39,13 @@ export const signUp = validatedAction(authSchema, async (data) => {
     passwordHash,
   };
 
-  const start: int = performance.now();
-
   const createdUser = await pool.query('INSERT INTO users(username, password_hash) VALUES($1, $2) RETURNING *', [username, passwordHash]);
 
   if (!createdUser) {
     return { error: "Failed to create user. Please try again." };
   }
-  
-  const end: int = performance.now();
-
-  console.log(`SignUp: query time ${end-start}ms`);
+ 
+  await pool.query(`INSERT INTO users_metrics(username, registered_at, last_login_at, last_logout_at) VALUES($1, now(), now(), NULL)`, [username]); 
 
   await setSession(createdUser.rows[0]);
 });
@@ -84,11 +80,14 @@ export const signIn = validatedAction(authSchema, async (data) => {
   if (!isPasswordValid) {
     return { error: "Invalid username or password. Please try again." };
   }
+
+  await pool.query(`UPDATE users_metrics SET last_login_at = now() WHERE username = $1`, [username]);
+
   await setSession(foundUser);
 });
 
 export async function signOut() {
   // clear session & cart
   const c = await cookies();
-  c.getAll().forEach((cookie) => c.delete(cookie.name));
+  c.getAll().forEach((cookie) => c.delete(cookie.name));  
 }

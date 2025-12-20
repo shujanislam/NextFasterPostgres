@@ -1,10 +1,16 @@
 "use server";
 
+import pool from "@/db";
 import { getCart, updateCart } from "./cart";
 
 export async function addToCart(prevState: unknown, formData: FormData) {
   const prevCart = await getCart();
   const productSlug = formData.get("productSlug");
+  
+  const rows = await pool.query(`SELECT * FROM products WHERE slug = $1 LIMIT 10`, [productSlug]);
+
+  const insertCartMetrics = await pool.query(`INSERT INTO cart_metrics(product, category, device_type) VALUES($1, $2, $3)`, [rows.rows[0].name, rows.rows[0].subcategory_slug, 'Laptop']);
+  
   if (typeof productSlug !== "string") {
     return;
   }
