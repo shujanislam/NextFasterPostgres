@@ -13,7 +13,7 @@ const pool = new Pool({
 });
 
 pool.on("connect", () => {
-  // console.log('pool working');
+  console.log("pool working");
 });
 
 pool.on("error", (err) => {
