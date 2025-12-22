@@ -128,6 +128,37 @@ export const getProductDetails = unstable_cache(
   { revalidate: 60 * 60 * 2 },
 );
 
+export const saveProductView = async (
+  productName: string,
+  productSlug: string,
+) => {
+  try {
+    const cookieStore = await cookies();
+    const sid = cookieStore.get("nf_session_id")?.value;
+
+    if (!sid) {
+      console.log("messing sid");
+      return;
+    }
+
+    const rows = await pool.query(
+      `SELECT * FROM product_view_events WHERE session_id = $1 AND product_slug = $2`,
+      [sid, productSlug],
+    );
+
+    if (rows.rows.length > 0) {
+      return;
+    }
+
+    await pool.query(
+      "INSERT INTO product_view_events(product_name, product_slug, session_id) VALUES($1, $2, $3)",
+      [productName, productSlug, sid],
+    );
+  } catch (err) {
+    console.log(err.message);
+  }
+};
+
 export const uploadProduct = async (
   subcategory_slug: string,
   name: string,

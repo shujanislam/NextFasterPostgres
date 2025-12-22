@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { AddToCartForm } from "@/components/add-to-cart-form";
 import { Metadata } from "next";
 
-import { getProductDetails, getProductsForSubcategory, getRelatedProducts } from "@/lib/queries";
+import { getProductDetails, getProductsForSubcategory, getRelatedProducts, saveProductView } from "@/lib/queries";
 
 export async function generateMetadata(props: {
   params: Promise<{ product: string; category: string; subcategory: string }>;
@@ -38,6 +38,8 @@ export default async function Page(props: {
     // getProductsForSubcategory(urlDecodedSubcategory),
     getRelatedProducts(urlDecodedSubcategory, urlDecodedProduct),
   ]);
+
+  await saveProductView(productData.name, productData.slug);
 
   if (!productData) {
     return notFound();
