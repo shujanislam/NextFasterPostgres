@@ -99,8 +99,18 @@ export const signIn = validatedAction(authSchema, async (data) => {
   await setSession(foundUser);
 });
 
-export async function signOut() {
-  // clear session & cart
+export async function signOut(username: string) {
+  // clear session & cart cookies
   const c = await cookies();
   c.getAll().forEach((cookie) => c.delete(cookie.name));
+
+  console.log(`username: ${username}`);
+
+  // update logout time (skip if username missing)
+  if (username) {
+    await pool.query(
+      `UPDATE users_metrics SET last_logout_at = now() WHERE username = $1`,
+      [username],
+    );
+  }
 }

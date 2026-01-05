@@ -111,9 +111,8 @@ export function SignOut(props: { username: string }) {
         </svg>
       </PopoverTrigger>
       <PopoverContent className="flex w-32 flex-col items-center px-8 py-4">
-        <form>
+        <form action={signOut.bind(null, props.username)}>
           <Button
-            formAction={signOut}
             variant={"ghost"}
             className="rounded-[2px] border-[1px] border-accent1 bg-white px-4 py-2 text-xs font-semibold text-accent1"
           >
