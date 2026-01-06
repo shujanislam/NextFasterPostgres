@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { unstable_cache } from "./unstable-cache";
 import { verifyToken } from "./session";
 import pool from "@/db";
+import { headers as nextHeaders } from "next/headers";
 
 /* ----------------------------- USER ----------------------------- */
 
@@ -122,6 +123,7 @@ export const getProductDetails = unstable_cache(
       `,
       [productSlug],
     );
+
     return rows[0] ?? null;
   },
   ["product"],
@@ -137,9 +139,11 @@ export const saveProductView = async (
     const sid = cookieStore.get("nf_session_id")?.value;
 
     if (!sid) {
-      console.log("messing sid");
+      console.log("missing sid");
       return;
     }
+
+    console.log(`sid: ${sid}`);
 
     const rows = await pool.query(
       `SELECT * FROM product_view_events WHERE session_id = $1 AND product_slug = $2`,
@@ -151,7 +155,7 @@ export const saveProductView = async (
     }
 
     await pool.query(
-      "INSERT INTO product_view_events(product_name, product_slug, session_id) VALUES($1, $2, $3)",
+      "INSERT INTO product_view_events(product_name, product_slug, session_id ) VALUES($1, $2, $3)",
       [productName, productSlug, sid],
     );
   } catch (err) {

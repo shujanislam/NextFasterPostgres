@@ -6,6 +6,8 @@ import { cookies, headers } from "next/headers";
 import { validatedAction } from "@/lib/middleware";
 import pool from "../../db/index.ts";
 import { comparePasswords, hashPassword, setSession } from "@/lib/session";
+import { headers as nextHeaders } from "next/headers";
+import { userAgent } from "next/server";
 
 const authSchema = z.object({
   username: z.string().min(1),
@@ -24,6 +26,17 @@ export const signUp = validatedAction(authSchema, async (data) => {
   //     },
   //   };
   // }
+
+  const h = await nextHeaders();
+
+  const ua = userAgent({ headers: h });
+
+  const device_type =
+    ua.device.type === "mobile"
+      ? "mobile"
+      : ua.device.type === "tablet"
+        ? "tablet"
+        : "desktop";
 
   const existingUser = await pool.query(
     "SELECT * FROM users WHERE username = $1",
@@ -51,8 +64,8 @@ export const signUp = validatedAction(authSchema, async (data) => {
   }
 
   await pool.query(
-    `INSERT INTO users_metrics(username, registered_at, last_login_at, last_logout_at) VALUES($1, now(), now(), NULL)`,
-    [username],
+    `INSERT INTO users_metrics(username, registered_at, last_login_at, last_logout_at, device_type) VALUES($1, now(), now(), NULL, $2)`,
+    [username, device_type],
   );
 
   await setSession(createdUser.rows[0]);
