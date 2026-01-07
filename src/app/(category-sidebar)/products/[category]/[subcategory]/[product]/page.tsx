@@ -33,13 +33,13 @@ export default async function Page(props: {
   const { product, subcategory, category } = await props.params;
   const urlDecodedProduct = decodeURIComponent(product);
   const urlDecodedSubcategory = decodeURIComponent(subcategory);
-  const [productData, relatedUnshifted] = await Promise.all([
+  const [{ productData, api_latency_ms }, relatedUnshifted] = await Promise.all([
     getProductDetails(urlDecodedProduct),
     // getProductsForSubcategory(urlDecodedSubcategory),
     getRelatedProducts(urlDecodedSubcategory, urlDecodedProduct),
   ]);
 
-  await saveProductView(productData.name, productData.slug);
+  await saveProductView(productData.name, productData.slug, api_latency_ms);
 
   if (!productData) {
     return notFound();

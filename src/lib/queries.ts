@@ -3,6 +3,7 @@ import { unstable_cache } from "./unstable-cache";
 import { verifyToken } from "./session";
 import pool from "@/db";
 import { headers as nextHeaders } from "next/headers";
+import { userAgent } from "next/server";
 
 /* ----------------------------- USER ----------------------------- */
 
@@ -114,6 +115,8 @@ export const getRelatedProducts = unstable_cache(
 
 export const getProductDetails = unstable_cache(
   async (productSlug: string) => {
+    const t1 = performance.now();
+
     const { rows } = await pool.query(
       `
       SELECT *
@@ -124,7 +127,14 @@ export const getProductDetails = unstable_cache(
       [productSlug],
     );
 
-    return rows[0] ?? null;
+    const t2 = performance.now();
+
+    const diff = t2 - t1;
+
+    return {
+      productData: rows[0] ?? null,
+      api_latency_ms: diff,
+    };
   },
   ["product"],
   { revalidate: 60 * 60 * 2 },
@@ -133,8 +143,20 @@ export const getProductDetails = unstable_cache(
 export const saveProductView = async (
   productName: string,
   productSlug: string,
+  api_latency_ms: number,
 ) => {
   try {
+    const h = await nextHeaders();
+
+    const ua = userAgent({ headers: h });
+
+    const device_type =
+      ua.device.type === "mobile"
+        ? "mobile"
+        : ua.device.type === "tablet"
+          ? "tablet"
+          : "desktop";
+
     const cookieStore = await cookies();
     const sid = cookieStore.get("nf_session_id")?.value;
 
@@ -155,8 +177,8 @@ export const saveProductView = async (
     }
 
     await pool.query(
-      "INSERT INTO product_view_events(product_name, product_slug, session_id ) VALUES($1, $2, $3)",
-      [productName, productSlug, sid],
+      "INSERT INTO product_view_events(product_name, product_slug, session_id, device_type, api_latency_ms) VALUES($1, $2, $3, $4, $5)",
+      [productName, productSlug, sid, device_type, api_latency_ms],
     );
   } catch (err) {
     console.log(err.message);
