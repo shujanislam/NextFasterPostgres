@@ -7,10 +7,10 @@ export async function addToCart(prevState: unknown, formData: FormData) {
   const prevCart = await getCart();
   const productSlug = formData.get("productSlug");
   
-  const rows = await pool.query(`SELECT * FROM products WHERE slug = $1 LIMIT 10`, [productSlug]);
+  const t1 = performance.now();
 
-  const insertCartMetrics = await pool.query(`INSERT INTO cart_metrics(product, category, device_type) VALUES($1, $2, $3)`, [rows.rows[0].name, rows.rows[0].subcategory_slug, 'Laptop']);
-  
+  const rows = await pool.query(`SELECT * FROM products WHERE slug = $1 LIMIT 10`, [productSlug]);
+ 
   if (typeof productSlug !== "string") {
     return;
   }
@@ -40,12 +40,23 @@ export async function addToCart(prevState: unknown, formData: FormData) {
     await updateCart(newCart);
   }
 
+  const t2 = performance.now();
+
+  const diff = t2 - t1;
+
+  await pool.query(`INSERT INTO cart_metrics(product, category, device_type, api_latency_ms, action_type) VALUES($1, $2, $3, $4, $5)`, [rows.rows[0].name, rows.rows[0].subcategory_slug, 'Laptop', diff, 'Added']);
+
   return "Item added to cart";
 }
 
 export async function removeFromCart(formData: FormData) {
   const prevCart = await getCart();
   const productSlug = formData.get("productSlug");
+
+  const t1 = performance.now();
+
+  const rows = await pool.query(`SELECT * FROM products WHERE slug = $1 LIMIT 10`, [productSlug]);
+  
   if (typeof productSlug !== "string") {
     return;
   }
@@ -57,4 +68,10 @@ export async function removeFromCart(formData: FormData) {
   }
   const newCart = prevCart.filter((item) => item.productSlug !== productSlug);
   await updateCart(newCart);
+
+  const t2 = performance.now();
+
+  const diff = t2 - t1;
+
+  await pool.query(`INSERT INTO cart_metrics(product, category, device_type, api_latency_ms, action_type) VALUES($1, $2, $3, $4, $5)`, [rows.rows[0].name, rows.rows[0].subcategory_slug, 'Laptop', diff, 'Removed']);
 }
