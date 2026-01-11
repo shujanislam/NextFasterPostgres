@@ -36,28 +36,31 @@ export default async function Page(props: {
   const { product, subcategory, category } = await props.params;
   const urlDecodedProduct = decodeURIComponent(product);
   const urlDecodedSubcategory = decodeURIComponent(subcategory);
+  const route = `/products/${category}/${subcategory}/${product}`;
   
   // Get headers and user agent outside of cache scope
   const h = await nextHeaders();
   const ua = userAgent({ headers: h });
   const cookieStore = await cookies();
   const sid = cookieStore.get("nf_session_id")?.value;
-  
-  const [{ productData, api_latency_ms }, relatedUnshifted] = await Promise.all([
-    getProductDetails(urlDecodedProduct),
-    // getProductsForSubcategory(urlDecodedSubcategory),
-    getRelatedProducts(urlDecodedSubcategory, urlDecodedProduct),
-  ]);
 
-  // Log request outcome (success assumed here; wrap in try/catch if you need to log failures)
-  logRequest(true, 200, sid, `/products/${category}/${subcategory}/${product}`).catch(console.error);
+  try {
+    const [{ productData, api_latency_ms }, relatedUnshifted] = await Promise.all([
+      getProductDetails(urlDecodedProduct),
+      // getProductsForSubcategory(urlDecodedSubcategory),
+      getRelatedProducts(urlDecodedSubcategory, urlDecodedProduct),
+    ]);
 
+    // Log success
+    logRequest(true, 200, sid, route).catch(console.error);
 
-  await saveProductView(productData.name, productData.slug, api_latency_ms);
+    await saveProductView(productData.name, productData.slug, api_latency_ms);
 
-  if (!productData) {
-    return notFound();
-  }
+    if (!productData) {
+      // Log 404
+      logRequest(false, 404, sid, route).catch(console.error);
+      return notFound();
+    }
   // const currentProductIndex = relatedUnshifted.findIndex(
   //   (p) => p.slug === productData.slug,
   // );
@@ -66,7 +69,7 @@ export default async function Page(props: {
   //   ...relatedUnshifted.slice(0, currentProductIndex),
   // ];
 
-  const related = relatedUnshifted;
+    const related = relatedUnshifted;
 
   return (
     <div className="container p-4">
@@ -113,4 +116,9 @@ export default async function Page(props: {
       </div>
     </div>
   );
+  } catch (e) {
+    // Log server error
+    logRequest(false, 500, sid, route).catch(console.error);
+    throw e;
+  }
 }

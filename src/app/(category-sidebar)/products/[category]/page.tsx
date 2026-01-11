@@ -10,6 +10,7 @@ export default async function Page(props: { params: { category: string } }) {
   const urlDecoded = decodeURIComponent(category);
 
   // Fetch category + subcollections + subcategories
+  try {
   const { rows } = await pool.query(
     `
     SELECT
@@ -31,7 +32,11 @@ export default async function Page(props: { params: { category: string } }) {
     [urlDecoded]
   );
 
-  if (rows.length === 0) return notFound();
+  if (rows.length === 0) {
+    const sid = (await cookies()).get("nf_session_id")?.value;
+    logRequest(false, 404, sid, `/products/${urlDecoded}`).catch(console.error);
+    return notFound();
+  }
 
   // Group subcollections + subcategories
   const subcollectionsMap: Record<string, any> = {};
@@ -113,4 +118,9 @@ export default async function Page(props: { params: { category: string } }) {
       )}
     </div>
   );
+  } catch (e) {
+    const sid = (await cookies()).get("nf_session_id")?.value;
+    logRequest(false, 500, sid, `/products/${urlDecoded}`).catch(console.error);
+    throw e;
+  }
 }

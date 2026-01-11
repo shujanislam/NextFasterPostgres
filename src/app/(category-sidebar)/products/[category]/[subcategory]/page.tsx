@@ -13,7 +13,7 @@ import { cookies } from "next/headers";
 export async function generateMetadata(props: {
   params: Promise<{ category: string; subcategory: string }>;
 }): Promise<Metadata> {
-  const { subcategory: subcategoryParam } = await props.params;
+  const { subcategory: subcategoryParam, category: categoryParam } = await props.params;
   const urlDecodedSubcategory = decodeURIComponent(subcategoryParam);
 
   const [subcategory, rows] = await Promise.all([
@@ -21,7 +21,12 @@ export async function generateMetadata(props: {
     getSubcategoryProductCount(urlDecodedSubcategory),
   ]);
 
-  if (!subcategory) notFound();
+  if (!subcategory) {
+    const sid = (await cookies()).get("nf_session_id")?.value;
+    const route = `/products/${decodeURIComponent(categoryParam)}/${urlDecodedSubcategory}`;
+    logRequest(false, 404, sid, route).catch(console.error);
+    return notFound();
+  }
 
   const count = rows[0]?.count ?? 0;
   const description =
@@ -45,23 +50,28 @@ export default async function Page(props: {
 
   const urlDecodedSubcategory = decodeURIComponent(subcategory);
 
-  const [products, countRows] = await Promise.all([
-    getProductsForSubcategory(urlDecodedSubcategory, after),
-    getSubcategoryProductCount(urlDecodedSubcategory),
-  ]);
+  try {
+    const [products, countRows] = await Promise.all([
+      getProductsForSubcategory(urlDecodedSubcategory, after),
+      getSubcategoryProductCount(urlDecodedSubcategory),
+    ]);
 
-  if (!products) notFound();
+    if (!products) {
+      const sid = (await cookies()).get("nf_session_id")?.value;
+      logRequest(false, 404, sid, `/products/${category}/${subcategory}`).catch(console.error);
+      return notFound();
+    }
 
-  const totalCount = countRows[0]?.count ?? 0;
+    const totalCount = countRows[0]?.count ?? 0;
 
-  const sid = (await cookies()).get("nf_session_id")?.value;
-  logRequest(true, 200, sid, `/products/${category}/${subcategory}`).catch(console.error);
+    const sid = (await cookies()).get("nf_session_id")?.value;
+    logRequest(true, 200, sid, `/products/${category}/${subcategory}`).catch(console.error);
 
-  // next cursor = last slug in the current batch
-  const nextAfter = products.length ? products[products.length - 1].slug : null;
+    // next cursor = last slug in the current batch
+    const nextAfter = products.length ? products[products.length - 1].slug : null;
 
-  // if we got fewer than 20 items, there's probably no more
-  const hasMore = products.length === 20 && nextAfter !== null;
+    // if we got fewer than 20 items, there's probably no more
+    const hasMore = products.length === 20 && nextAfter !== null;
 
   return (
     <div className="container mx-auto p-4">
@@ -100,4 +110,9 @@ export default async function Page(props: {
       </div>
     </div>
   );
+  } catch (e) {
+    const sid = (await cookies()).get("nf_session_id")?.value;
+    logRequest(false, 500, sid, `/products/${category}/${subcategory}`).catch(console.error);
+    throw e;
+  }
 }
