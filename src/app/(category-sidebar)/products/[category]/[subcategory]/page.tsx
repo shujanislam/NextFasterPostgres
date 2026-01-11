@@ -55,7 +55,7 @@ export default async function Page(props: {
   const totalCount = countRows[0]?.count ?? 0;
 
   const sid = (await cookies()).get("nf_session_id")?.value;
-  logRequest(true, 200, sid).catch(console.error);
+  logRequest(true, 200, sid, `/products/${category}/${subcategory}`).catch(console.error);
 
   // next cursor = last slug in the current batch
   const nextAfter = products.length ? products[products.length - 1].slug : null;

@@ -15,7 +15,7 @@ export default async function Home() {
   ]);
 
   const sid = (await cookies()).get("nf_session_id")?.value;
-  logRequest(true, 200, sid).catch(console.error);
+  logRequest(true, 200, sid, "/").catch(console.error);
 
   let imageCount = 0;
 

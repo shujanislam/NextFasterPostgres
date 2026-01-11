@@ -59,7 +59,7 @@ export default async function Page(props: { params: { category: string } }) {
   const finalCount = finalCountRes ?? 0;
 
   const sid = (await cookies()).get("nf_session_id")?.value;
-  logRequest(true, 200, sid).catch(console.error);
+  logRequest(true, 200, sid, `/products/${urlDecoded}`).catch(console.error);
 
   return (
     <div className="container p-4">

@@ -7,13 +7,18 @@ import { userAgent } from "next/server";
 
 /* ----------------------------- LOGGING ----------------------------- */
 
-export const logRequest = async (ok: boolean, status: number, sessionId?: string) => {
+export const logRequest = async (
+  ok: boolean,
+  status: number,
+  sessionId?: string,
+  route?: string,
+) => {
   try {
     if (!sessionId) return;
 
     await pool.query(
-      `INSERT INTO request_logs(session_id, ok, status) VALUES($1, $2, $3)`,
-      [sessionId, ok, status],
+      `INSERT INTO request_logs(session_id, ok, status, route) VALUES($1, $2, $3, $4)`,
+      [sessionId, ok, status, route ?? null],
     );
   } catch (err: any) {
     console.error("[logRequest] Error:", err.message);

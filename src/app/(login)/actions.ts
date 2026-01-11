@@ -72,7 +72,7 @@ export const signUp = validatedAction(authSchema, async (data) => {
   await setSession(createdUser.rows[0]);
 
   const sid = (await cookies()).get("nf_session_id")?.value;
-  logRequest(true, 200, sid).catch(console.error);
+  logRequest(true, 200, sid, "/login/signup").catch(console.error);
 });
 
 export const signIn = validatedAction(authSchema, async (data) => {
@@ -116,7 +116,7 @@ export const signIn = validatedAction(authSchema, async (data) => {
   await setSession(foundUser);
 
   const sid = (await cookies()).get("nf_session_id")?.value;
-  logRequest(true, 200, sid).catch(console.error);
+  logRequest(true, 200, sid, "/login/signin").catch(console.error);
 });
 
 export async function signOut(username: string) {

@@ -50,7 +50,7 @@ export default async function Page(props: {
   ]);
 
   // Log request outcome (success assumed here; wrap in try/catch if you need to log failures)
-  logRequest(true, 200, sid).catch(console.error);
+  logRequest(true, 200, sid, `/products/${category}/${subcategory}/${product}`).catch(console.error);
 
 
   await saveProductView(productData.name, productData.slug, api_latency_ms);
