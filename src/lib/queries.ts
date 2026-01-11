@@ -5,6 +5,21 @@ import pool from "@/db";
 import { headers as nextHeaders } from "next/headers";
 import { userAgent } from "next/server";
 
+/* ----------------------------- LOGGING ----------------------------- */
+
+export const logRequest = async (ok: boolean, status: number, sessionId?: string) => {
+  try {
+    if (!sessionId) return;
+
+    await pool.query(
+      `INSERT INTO request_logs(session_id, ok, status) VALUES($1, $2, $3)`,
+      [sessionId, ok, status],
+    );
+  } catch (err: any) {
+    console.error("[logRequest] Error:", err.message);
+  }
+};
+
 /* ----------------------------- USER ----------------------------- */
 
 export async function getUser() {

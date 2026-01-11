@@ -2,7 +2,8 @@ import Image from "next/image";
 import { Link } from "@/components/ui/link";
 import { notFound } from "next/navigation";
 import pool from "@/db";
-import { getCategoryProductCount } from "@/lib/queries";
+import { getCategoryProductCount, logRequest } from "@/lib/queries";
+import { cookies } from "next/headers";
 
 export default async function Page(props: { params: { category: string } }) {
   const { category } = await props.params;
@@ -56,6 +57,9 @@ export default async function Page(props: { params: { category: string } }) {
   // Get total product count
   const finalCountRes = await getCategoryProductCount(urlDecoded);
   const finalCount = finalCountRes ?? 0;
+
+  const sid = (await cookies()).get("nf_session_id")?.value;
+  logRequest(true, 200, sid).catch(console.error);
 
   return (
     <div className="container p-4">

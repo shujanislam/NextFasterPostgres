@@ -3,8 +3,11 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { AddToCartForm } from "@/components/add-to-cart-form";
 import { Metadata } from "next";
+import { headers as nextHeaders } from "next/headers";
+import { userAgent } from "next/server";
+import { cookies } from "next/headers";
 
-import { getProductDetails, getProductsForSubcategory, getRelatedProducts, saveProductView } from "@/lib/queries";
+import { getProductDetails, getProductsForSubcategory, getRelatedProducts, saveProductView, logRequest } from "@/lib/queries";
 
 export async function generateMetadata(props: {
   params: Promise<{ product: string; category: string; subcategory: string }>;
@@ -19,7 +22,7 @@ export async function generateMetadata(props: {
   }
 
   return {
-    openGraph: { title: product.name, description: product.description },
+    openGraph: { title: product.productData.name, description: product.productData.description },
   };
 }
 
@@ -33,11 +36,22 @@ export default async function Page(props: {
   const { product, subcategory, category } = await props.params;
   const urlDecodedProduct = decodeURIComponent(product);
   const urlDecodedSubcategory = decodeURIComponent(subcategory);
+  
+  // Get headers and user agent outside of cache scope
+  const h = await nextHeaders();
+  const ua = userAgent({ headers: h });
+  const cookieStore = await cookies();
+  const sid = cookieStore.get("nf_session_id")?.value;
+  
   const [{ productData, api_latency_ms }, relatedUnshifted] = await Promise.all([
     getProductDetails(urlDecodedProduct),
     // getProductsForSubcategory(urlDecodedSubcategory),
     getRelatedProducts(urlDecodedSubcategory, urlDecodedProduct),
   ]);
+
+  // Log request outcome (success assumed here; wrap in try/catch if you need to log failures)
+  logRequest(true, 200, sid).catch(console.error);
+
 
   await saveProductView(productData.name, productData.slug, api_latency_ms);
 

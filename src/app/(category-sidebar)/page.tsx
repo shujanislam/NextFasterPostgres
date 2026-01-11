@@ -1,5 +1,6 @@
 import { Link } from "@/components/ui/link";
-import { getCollections, getProductCount } from "@/lib/queries";
+import { getCollections, getProductCount, logRequest } from "@/lib/queries";
+import { cookies } from "next/headers";
 import Image from "next/image";
 
 /** 🔒 Hard boundary sanitization for Image src */
@@ -12,6 +13,9 @@ export default async function Home() {
     getCollections(),
     getProductCount(),
   ]);
+
+  const sid = (await cookies()).get("nf_session_id")?.value;
+  logRequest(true, 200, sid).catch(console.error);
 
   let imageCount = 0;
 

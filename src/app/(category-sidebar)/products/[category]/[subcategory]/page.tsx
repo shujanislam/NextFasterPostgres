@@ -6,7 +6,9 @@ import {
   getProductsForSubcategory,
   getSubcategory,
   getSubcategoryProductCount,
+  logRequest,
 } from "@/lib/queries";
+import { cookies } from "next/headers";
 
 export async function generateMetadata(props: {
   params: Promise<{ category: string; subcategory: string }>;
@@ -51,6 +53,9 @@ export default async function Page(props: {
   if (!products) notFound();
 
   const totalCount = countRows[0]?.count ?? 0;
+
+  const sid = (await cookies()).get("nf_session_id")?.value;
+  logRequest(true, 200, sid).catch(console.error);
 
   // next cursor = last slug in the current batch
   const nextAfter = products.length ? products[products.length - 1].slug : null;
