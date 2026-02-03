@@ -10,6 +10,7 @@ import { Toaster } from "sonner";
 // import { WelcomeToast } from "./welcome-toast";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import EffectMeasure from '../lib/effect-measure';
 
 export const metadata: Metadata = {
   title: {
@@ -93,6 +94,7 @@ export default async function RootLayout({
               </div>
             </div>
           </header>
+          <EffectMeasure />
           <div className="pt-[85px] sm:pt-[70px]">{children}</div>
         </div>
         <footer className="fixed bottom-0 flex h-12 w-screen flex-col items-center justify-between space-y-2 border-t border-gray-400 bg-background px-4 font-sans text-[11px] sm:h-6 sm:flex-row sm:space-y-0">
