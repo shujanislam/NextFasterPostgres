@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { logHydrationTime } from "./actions";
 
 export default function EffectMeasure() {
   useEffect(() => {
@@ -13,9 +14,7 @@ export default function EffectMeasure() {
     // Using 0 is effectively "since navigation start".
     const sinceNavStart = end;
 
-    console.log(
-      `Hydration effect ran at: ${sinceNavStart.toFixed(2)}ms since navigation start`,
-    );
+    logHydrationTime(sinceNavStart.toFixed(2));
   }, []);
 
   return null;

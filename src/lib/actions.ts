@@ -6,11 +6,14 @@ import { getCart, updateCart } from "./cart";
 export async function addToCart(prevState: unknown, formData: FormData) {
   const prevCart = await getCart();
   const productSlug = formData.get("productSlug");
-  
+
   const t1 = performance.now();
 
-  const rows = await pool.query(`SELECT * FROM products WHERE slug = $1 LIMIT 10`, [productSlug]);
- 
+  const rows = await pool.query(
+    `SELECT * FROM products WHERE slug = $1 LIMIT 10`,
+    [productSlug],
+  );
+
   if (typeof productSlug !== "string") {
     return;
   }
@@ -44,7 +47,10 @@ export async function addToCart(prevState: unknown, formData: FormData) {
 
   const diff = t2 - t1;
 
-  await pool.query(`INSERT INTO cart_metrics(product, category, device_type, api_latency_ms, action_type) VALUES($1, $2, $3, $4, $5)`, [rows.rows[0].name, rows.rows[0].subcategory_slug, 'Laptop', diff, 'Added']);
+  await pool.query(
+    `INSERT INTO cart_metrics(product, category, device_type, api_latency_ms, action_type) VALUES($1, $2, $3, $4, $5)`,
+    [rows.rows[0].name, rows.rows[0].subcategory_slug, "Laptop", diff, "Added"],
+  );
 
   return "Item added to cart";
 }
@@ -55,8 +61,11 @@ export async function removeFromCart(formData: FormData) {
 
   const t1 = performance.now();
 
-  const rows = await pool.query(`SELECT * FROM products WHERE slug = $1 LIMIT 10`, [productSlug]);
-  
+  const rows = await pool.query(
+    `SELECT * FROM products WHERE slug = $1 LIMIT 10`,
+    [productSlug],
+  );
+
   if (typeof productSlug !== "string") {
     return;
   }
@@ -73,5 +82,25 @@ export async function removeFromCart(formData: FormData) {
 
   const diff = t2 - t1;
 
-  await pool.query(`INSERT INTO cart_metrics(product, category, device_type, api_latency_ms, action_type) VALUES($1, $2, $3, $4, $5)`, [rows.rows[0].name, rows.rows[0].subcategory_slug, 'Laptop', diff, 'Removed']);
+  await pool.query(
+    `INSERT INTO cart_metrics(product, category, device_type, api_latency_ms, action_type) VALUES($1, $2, $3, $4, $5)`,
+    [
+      rows.rows[0].name,
+      rows.rows[0].subcategory_slug,
+      "Laptop",
+      diff,
+      "Removed",
+    ],
+  );
+}
+
+export async function logHydrationTime(time: number) {
+  try {
+    await pool.query(
+      `INSERT INTO hydration_metrics(hydration_time) VALUES($1)`,
+      [time],
+    );
+  } catch (err: any) {
+    console.log(err.message);
+  }
 }
